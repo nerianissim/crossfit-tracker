@@ -6,59 +6,116 @@ import requests
 
 # הגדרת עמוד
 st.set_page_config(
-    page_title="CrossFit PR Tracker", 
+    page_title="CrossFit PR Tracker Pro", 
     page_icon="⚡", 
     layout="centered",
     initial_sidebar_state="collapsed"
 )
 
-# עיצוב CSS נקי, יוקרתי ומותאם אישית (ללא חסימת שדות)
+# עיצוב CSS מתקדם ומקצועי (Dark Mode מודרני, כפתורים וכארדים בעיצוב היי-טק)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap');
     
     .stApp {
-        background-color: #0E1117;
+        background-color: #0B0F19;
         color: #F8FAFC;
         font-family: 'Heebo', sans-serif;
     }
     
-    /* כותרת ראשית */
+    /* כותרת ראשית יוקרתית */
     .hero-container {
         text-align: center;
-        padding: 1.5rem 0 1rem 0;
-        border-bottom: 2px solid #1F2937;
+        padding: 2rem 0 1.5rem 0;
+        background: linear-gradient(180deg, rgba(37, 99, 235, 0.08) 0%, rgba(11, 15, 25, 0) 100%);
+        border-bottom: 1px solid #1E293B;
         margin-bottom: 2rem;
+        border-radius: 0 0 16px 16px;
     }
     .main-title {
-        font-size: 2.8rem;
+        font-size: 3rem;
         font-weight: 900;
         color: #FFFFFF;
         letter-spacing: 2px;
         margin: 0;
     }
     .sub-title {
-        font-size: 1rem;
-        color: #9CA3AF;
-        margin-top: 0.4rem;
+        font-size: 1.1rem;
+        color: #94A3B8;
+        margin-top: 0.5rem;
+        font-weight: 400;
     }
 
-    /* עיצוב כפתור השמירה */
+    /* עיצוב לשוניות (Tabs) */
+    .stTabs [data-baseweb="tab-list"] {
+        justify-content: center;
+        gap: 12px;
+        background-color: #111827;
+        padding: 8px;
+        border-radius: 12px;
+        border: 1px solid #1F2937;
+    }
+    .stTabs [data-baseweb="tab"] {
+        background-color: transparent;
+        color: #94A3B8;
+        border-radius: 8px;
+        padding: 10px 24px;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s ease;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: #2563EB !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    }
+
+    /* עיצוב שדות המספרים (כארדים) */
+    div.stNumberInput {
+        background-color: #111827;
+        padding: 14px;
+        border-radius: 12px;
+        border: 1px solid #1F2937;
+        margin-bottom: 14px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        transition: border-color 0.2s ease;
+    }
+    div.stNumberInput:hover {
+        border-color: #3B82F6;
+    }
+    div.stNumberInput label {
+        color: #E2E8F0 !important;
+        font-weight: 600 !important;
+        font-size: 1.05rem !important;
+    }
+
+    /* כפתור שמירה מקצועי ובולט */
     .stButton>button {
         width: 100%;
         background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
         color: white;
-        border-radius: 10px;
+        border-radius: 12px;
         font-weight: 700;
-        font-size: 1.1rem;
-        padding: 0.7rem;
+        font-size: 1.2rem;
+        padding: 0.9rem;
         border: none;
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.5);
         transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
     .stButton>button:hover {
         background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%);
+        box-shadow: 0 12px 24px -4px rgba(37, 99, 235, 0.7);
         transform: translateY(-2px);
+    }
+
+    /* טבלאות נתונים בעיצוב דארק מודי */
+    .dataframe {
+        background-color: #111827 !important;
+        color: #F8FAFC !important;
+        border-radius: 10px !important;
+        border: 1px solid #1F2937 !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -67,7 +124,7 @@ st.markdown("""
 st.markdown("""
     <div class="hero-container">
         <p class="main-title">⚡ CROSSFIT</p>
-        <p class="sub-title">מערכת מעקב שיאים אישיים מתקדמת</p>
+        <p class="sub-title">מערכת ניהול שיאים אישיים מתקדמת</p>
     </div>
 """, unsafe_allow_html=True)
 
@@ -117,7 +174,7 @@ if not data:
 tab1, tab2 = st.tabs(["🏋️ Weightlifting", "🤸 Gymnastics"])
 
 with tab1:
-    st.subheader("🏋️ משקלי עבודה (ק\"ג)")
+    st.markdown("### 🏋️ משקלי עבודה (ק\"ג)")
     updated_wl = {}
     cols = st.columns(2)
     items = list(data["Weightlifting"].items())
@@ -126,12 +183,4 @@ with tab1:
     for i, (exercise, weight) in enumerate(items):
         target_col = cols[0] if i < half else cols[1]
         with target_col:
-            val = st.number_input(f"{exercise}", value=float(weight), step=2.5, format="%.1f", key=f"wl_{exercise}")
-            updated_wl[exercise] = val
-
-with tab2:
-    st.subheader("🤸 תרגילי משקל גוף (חזרות)")
-    updated_gym = {}
-    cols_g = st.columns(2)
-    gym_items = list(data["Gymnastics"].items())
-    half_g = len(gym_items)
+            val = st.number_input(f"{exercise}", value=float(weight), step=2.5, format="%.1f", key=f
