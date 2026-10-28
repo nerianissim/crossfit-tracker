@@ -12,7 +12,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# הזרקת עיצוב CSS מותאם אישית למראה רשמי ומקצועי יותר (כולל יישור לימין)
+# הזרקת עיצוב CSS מותאם אישית למראה רשמי ומקצועי (יישור לימין)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&display=swap');
@@ -38,7 +38,6 @@ st.markdown("""
         margin-bottom: 2rem;
     }
     
-    /* עיצוב כפתורים */
     .stButton>button {
         width: 100%;
         background-color: #2563EB;
@@ -110,8 +109,6 @@ tab1, tab2 = st.tabs(["🏋️ Weightlifting & Powerlifting", "🤸 Gymnastics &
 with tab1:
     st.markdown("### משקלי עבודה (ק\"ג)")
     updated_wl = {}
-    
-    # חלוקה ל-2 טוריות פנימיות לנוחות צפייה ועריכה
     cols = st.columns(2)
     items = list(data["Weightlifting"].items())
     half = len(items) // 2
@@ -125,13 +122,12 @@ with tab1:
 with tab2:
     st.markdown("### תרגילי משקל גוף וגמישות (חזרות)")
     updated_gym = {}
-    
     cols_g = st.columns(2)
     gym_items = list(data["Gymnastics"].items())
     half_g = len(gym_items) // 2
     
     for i, (exercise, reps) in enumerate(gym_items):
-        target_col = cols_g[0] if i < half_g else cols_g_1 = cols_g[1] if i >= half_g else cols_g[1]
+        target_col = cols_g[0] if i < half_g else cols_g[1]
         with target_col:
             val = st.number_input(f"{exercise}", value=int(reps), step=1, key=f"gym_{exercise}")
             updated_gym[exercise] = val
@@ -161,7 +157,7 @@ st.markdown("### 📊 סיכום שיאים אישיים פעילים")
 summary_col1, summary_col2 = st.columns(2)
 
 with summary_col1:
-    st.markdown("**הרתמנויות - Weightlifting**")
+    st.markdown("**הרים - Weightlifting**")
     df_wl = pd.DataFrame(list(data["Weightlifting"].items()), columns=["תרגיל", "משקל (ק\"ג)"])
     st.dataframe(df_wl[df_wl["משקל (ק\"ג)"] > 0], hide_index=True, use_container_width=True)
 
