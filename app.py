@@ -124,7 +124,7 @@ st.markdown("""
 st.markdown("""
     <div class="hero-container">
         <p class="main-title">⚡ CROSSFIT</p>
-        <p class="sub-title">מערכת ניהול שיאים אישיים מתקדמת</p>
+        <p class="sub-title">מערכת מעקב שיאים אישיים מתקדמת</p>
     </div>
 """, unsafe_allow_html=True)
 
@@ -134,90 +134,4 @@ try:
     REPO = st.secrets["REPO_NAME"]
 except Exception:
     st.error("⚠️ יש להגדיר תקינות של GITHUB_TOKEN ו-REPO ב-Streamlit Secrets.")
-    st.stop()
-
-FILE_PATH = "data.json"
-API_URL = f"https://api.github.com/repos/{REPO}/contents/{FILE_PATH}"
-
-headers = {
-    "Authorization": f"Bearer {TOKEN}",
-    "Accept": "application/vnd.github.v3+json"
-}
-
-@st.cache_data(ttl=1)
-def load_data_from_github():
-    response = requests.get(API_URL, headers=headers)
-    if response.status_code == 200:
-        file_info = response.json()
-        file_content = base64.b64decode(file_info["content"]).decode("utf-8")
-        return json.loads(file_content), file_info["sha"]
-    return None, None
-
-def save_data_to_github(data_dict, sha):
-    updated_content = json.dumps(data_dict, indent=4, ensure_ascii=False)
-    encoded_content = base64.b64encode(updated_content.encode("utf-8")).decode("utf-8")
-    
-    payload = {
-        "message": "Update CrossFit PRs via Pro Dashboard",
-        "content": encoded_content,
-        "sha": sha
-    }
-    response = requests.put(API_URL, headers=headers, json=payload)
-    return response.status_code in [200, 201]
-
-data, file_sha = load_data_from_github()
-if not data:
-    st.error("❌ שגיאה בטעינת הנתונים מול GitHub. בדוק את הרשאות הטוקן ושם המאגר.")
-    st.stop()
-
-# לשוניות ראשיות
-tab1, tab2 = st.tabs(["🏋️ Weightlifting", "🤸 Gymnastics"])
-
-with tab1:
-    st.markdown("### 🏋️ משקלי עבודה (ק\"ג)")
-    updated_wl = {}
-    cols = st.columns(2)
-    items = list(data["Weightlifting"].items())
-    half = len(items) // 2
-    
-    for i, (exercise, weight) in enumerate(items):
-        target_col = cols[0] if i < half else cols[1]
-        with target_col:
-            val = st.number_input(exercise, value=float(weight), step=2.5, format="%.1f", key=f"wl_{exercise}")
-            updated_wl[exercise] = val
-
-with tab2:
-    st.markdown("### 🤸 תרגילי משקל גוף (חזרות)")
-    updated_gym = {}
-    cols_g = st.columns(2)
-    gym_items = list(data["Gymnastics"].items())
-    half_g = len(gym_items) // 2
-    
-    for i, (exercise, reps) in enumerate(gym_items):
-        target_col = cols_g[0] if i < half_g else cols_g[1]
-        with target_col:
-            val = st.number_input(exercise, value=int(reps), step=1, key=f"gym_{exercise}")
-            updated_gym[exercise] = val
-
-st.markdown("<br>", unsafe_allow_html=True)
-
-# כפתור שמירה ראשי בולט ומעוצב
-col_btn1, col_btn2, col_btn3 = st.columns([1, 3, 1])
-with col_btn2:
-    if st.button("💾 שמור שיאים חדשים במערכת", type="primary"):
-        new_data = {
-            "Weightlifting": updated_wl,
-            "Gymnastics": updated_gym
-        }
-        success = save_data_to_github(new_data, file_sha)
-        if success:
-            st.success("השיאים עודכנו ונשמרו בהצלחה ב-GitHub! 🎉")
-            st.cache_data.clear()
-            st.rerun()
-        else:
-            st.error("שגיאה בשמירת הנתונים. ודא שהטוקן תקין.")
-
-st.markdown("<hr style='border-color: #1F2937; margin: 2rem 0;'>", unsafe_allow_html=True)
-
-# חלק סיכום נקי
-st.markdown("### 📊 סי
+    st.stop
