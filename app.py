@@ -7,7 +7,7 @@ st.title("🏋️‍♂️ מעקב שיאי קרוספיט")
 
 # קישור ישיר ל-Google Sheets (מותנה בכך שהגיליון שותף לציבור: Anyone with the link can view)
 # שים לב: החלף את הקישור למטה בקישור האמיתי של הגיליון שלך
-SHEET_ID = "YOUR_SPREADSHEET_ID_HERE"
+SHEET_ID = "1oKK8oJ2N_z0I3oGKYJPhG-AUNf4hR9VGNNWpg6wUayc"
 
 # דרך פשוטה ומהירה לקרוא את הנתונים ישירות ללא תלות בספריות חיצוניות
 @st.cache_data(ttl=60)
