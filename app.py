@@ -1,65 +1,37 @@
 import streamlit as st
 import pandas as pd
-from streamlit_gsheets import GSheetsConnection
 
 st.set_page_config(page_title="CrossFit PR Tracker", page_icon="🏋️‍♂️", layout="centered")
 
-st.title("🏋️‍♂️ מעקב שיאי קרוספיט - מחובר ל-Google Sheets")
+st.title("🏋️‍♂️ מעקב שיאי קרוספיט")
 
-# יצירת חיבור ל-Google Sheets
-conn = st.connection("gsheets", type=GSheetsConnection)
+# קישור ישיר ל-Google Sheets (מותנה בכך שהגיליון שותף לציבור: Anyone with the link can view)
+# שים לב: החלף את הקישור למטה בקישור האמיתי של הגיליון שלך
+SHEET_ID = "YOUR_SPREADSHEET_ID_HERE"
 
-# טעינת הנתונים מהגיליונות (יש לוודא ששמות הטאבים תואמים)
+# דרך פשוטה ומהירה לקרוא את הנתונים ישירות ללא תלות בספריות חיצוניות
+@st.cache_data(ttl=60)
+def load_data():
+    # כתובת ייצוא ל-CSV מתוך גוגל שיטס
+    url_wl = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Weightlifting"
+    url_gym = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Gymnastics"
+    
+    df_wl = pd.read_csv(url_wl)
+    df_gym = pd.read_csv(url_gym)
+    return df_wl, df_gym
+
 try:
-    df_wl = conn.read(worksheet="Weightlifting", usecols=[0, 1], ttl=0)
-    df_gym = conn.read(worksheet="Gymnastics", usecols=[0, 1], ttl=0)
+    df_wl, df_gym = load_data()
 except Exception as e:
-    st.error(f"שגיאה בטעינת הנתונים מ-Google Sheets: {e}")
+    st.warning("נא להזין את ה-ID של הגיליון שלך בקוד כדי לטעון את הנתונים.")
     st.stop()
 
-# טאבים להפרדה
 tab1, tab2 = st.tabs(["🏋️ Weightlifting & Powerlifting", "🤸 Gymnastics & Calisthenics"])
 
 with tab1:
-    st.subheader("עדכון משקלי עבודה (ק\"ג)")
-    updated_wl = []
-    for index, row in df_wl.iterrows():
-        exercise = row["Exercise"]
-        current_weight = float(row["Weight"]) if pd.notna(row["Weight"]) else 0.0
-        new_weight = st.number_input(f"{exercise}", value=current_weight, step=2.5, format="%.1f", key=f"wl_{exercise}")
-        updated_wl.append({"Exercise": exercise, "Weight": new_weight})
-    
-    df_wl_new = pd.DataFrame(updated_wl)
+    st.subheader("משקלי עבודה (ק\"ג)")
+    st.dataframe(df_wl, hide_index=True, use_container_width=True)
 
 with tab2:
-    st.subheader("עדכון תרגילי גמישות וממשקל גוף (חזרות)")
-    updated_gym = []
-    for index, row in df_gym.iterrows():
-        exercise = row["Exercise"]
-        current_reps = int(row["Reps"]) if pd.notna(row["Reps"]) else 0
-        new_reps = st.number_input(f"{exercise}", value=current_reps, step=1, key=f"gym_{exercise}")
-        updated_gym.append({"Exercise": exercise, "Reps": new_reps})
-        
-    df_gym_new = pd.DataFrame(updated_gym)
-
-# כפתור שמירה ל-Google Sheets
-if st.button("💾 שמור שיאים חדשים ל-Google Sheets", type="primary"):
-    try:
-        conn.update(worksheet="Weightlifting", data=df_wl_new)
-        conn.update(worksheet="Gymnastics", data=df_gym_new)
-        st.success("השיאים עודכנו בהצלחה ב-Google Sheets! 🎉")
-        st.rerun()
-    except Exception as e:
-        st.error(f"שגיאה בשמירת הנתונים: {e}")
-
-st.divider()
-st.subheader("📊 סיכום שיאים נוכחי")
-col1, col2 = st.columns(2)
-
-with col1:
-    st.markdown("**Weightlifting**")
-    st.dataframe(df_wl[df_wl["Weight"] > 0], hide_index=True, use_container_width=True)
-
-with col2:
-    st.markdown("**Gymnastics**")
-    st.dataframe(df_gym[df_gym["Reps"] > 0], hide_index=True, use_container_width=True)
+    st.subheader("תרגילי גמישות וממשקל גוף (חזרות)")
+    st.dataframe(df_gym, hide_index=True, use_container_width=True)
