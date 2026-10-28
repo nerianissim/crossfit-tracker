@@ -60,7 +60,7 @@ st.markdown("""
         background-color: transparent;
         color: #64748B;
         border-radius: 8px;
-        padding: 10px 20px;
+        padding: 10px 24px;
         font-weight: 600;
         border: none;
         transition: all 0.3s ease;
@@ -188,56 +188,22 @@ def save_data_to_github(data_dict, sha):
 
 data, file_sha = load_data_from_github()
 
-# יצירת לשוניות ניווט מתקדמות
-tab_overview, tab_wl, tab_gym, tab_calc = st.tabs([
-    "📊 סקירה כללית (Overview)", 
-    "🏋️ משקלי עבודה (Weightlifting)", 
-    "🤸 ג׳ימנסטיקה (Gymnastics)", 
-    "🧮 מחשבון אחוזים (Percentage Calc)"
-])
-
 wl_dict = data.get("Weightlifting", DEFAULT_DATA["Weightlifting"])
 gym_dict = data.get("Gymnastics", DEFAULT_DATA["Gymnastics"])
 
-# --- טאב 1: סקירה כללית ---
-with tab_overview:
-    st.markdown("### 📈 מדדי ביצוע מרכזיים")
-    
-    active_lifts = {k: v for k, v in wl_dict.items() if v > 0}
-    max_lift_name = max(active_lifts, key=active_lifts.get) if active_lifts else "אין"
-    max_lift_val = active_lifts[max_lift_name] if active_lifts else 0
-    
-    col1, col2, col3 = st.columns(3)
-    col1.metric("סה\"כ תרגילי כוח", len(wl_dict))
-    col2.metric("התרגיל החזק ביותר", max_lift_name, f"{max_lift_val} ק\"ג")
-    col3.metric("תרגילי ג׳ימנסטיקה", len(gym_dict))
-    
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("### 📊 השוואת משקלי כוח (גרף)")
-    if active_lifts:
-        df_chart = pd.DataFrame(list(active_lifts.items()), columns=["תרגיל", "משקל (ק\"ג)"])
-        df_chart = df_chart.set_index("תרגיל")
-        st.bar_chart(df_chart, color="#2563EB")
-    
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    col_t1, col_t2 = st.columns(2)
-    with col_t1:
-        st.markdown("**🏆 Weightlifting PRs**")
-        df_wl = pd.DataFrame(list(wl_dict.items()), columns=["תרגיל", "משקל (ק\"ג)"])
-        st.dataframe(df_wl[df_wl["משקל (ק\"ג)"] > 0], hide_index=True, use_container_width=True)
-    with col_t2:
-        st.markdown("**⭐ Gymnastics PRs**")
-        df_gym = pd.DataFrame(list(gym_dict.items()), columns=["תרגיל", "חזרות"])
-        st.dataframe(df_gym[df_gym["חזרות"] > 0], hide_index=True, use_container_width=True)
+# שתי לשוניות בלבד כמבוקש
+tab_wl, tab_gym = st.tabs([
+    "🏋️ משקלי עבודה (Weightlifting)", 
+    "🤸 ג׳ימנסטיקה (Gymnastics)"
+])
 
 updated_wl = {}
 updated_gym = {}
 
-# --- טאב 2: משקלי עבודה ---
+# --- טאב 1: משקלי עבודה + מחשבון אחוזים ---
 with tab_wl:
     st.markdown("### 🏋️ ניהול משקלי עבודה (ק\"ג)")
-    st.markdown("עדכן את שיאי המשקל שלך. השינויים יישמרו בענן בלחיצת כפתור.")
+    st.markdown("עדכן את שיאי המשקל שלך:")
     cols = st.columns(2)
     items = list(wl_dict.items())
     half = len(items) // 2
@@ -248,10 +214,32 @@ with tab_wl:
             val = st.number_input(exercise, value=float(weight), step=2.5, format="%.1f", key=f"wl_{exercise}")
             updated_wl[exercise] = val
 
-# --- טאב 3: ג'ימנסטיקה ---
+    st.markdown("<hr style='border-color: #E2E8F0; margin: 2rem 0;'>", unsafe_allow_html=True)
+    
+    # מחשבון אחוזים מובנה בלשונית המשקלים
+    st.markdown("### 🧮 מחשבון אחוזים לעבודה (Percentage Calculator)")
+    st.markdown("בחר תרגיל או הזן משקל לבדיקת אחוזי עבודה אימוניים:")
+    
+    calc_col1, calc_col2 = st.columns([2, 1])
+    with calc_col1:
+        selected_exercise = st.selectbox("בחר תרגיל מתוך השיאים:", list(wl_dict.keys()))
+    with calc_col2:
+        custom_base = st.number_input("משקל בסיס (ק\"ג):", value=float(wl_dict.get(selected_exercise, 100)), step=5.0)
+    
+    if custom_base > 0:
+        percentages = [50, 60, 65, 70, 75, 80, 85, 90, 95, 100]
+        perc_data = []
+        for p in percentages:
+            calculated_weight = round((custom_base * p) / 100, 1)
+            perc_data.append({"אחוז": f"{p}%", "משקל עבודה (ק\"ג)": calculated_weight})
+        
+        df_perc = pd.DataFrame(perc_data)
+        st.dataframe(df_perc, hide_index=True, use_container_width=True)
+
+# --- טאב 2: ג'ימנסטיקה ---
 with tab_gym:
     st.markdown("### 🤸 ניהול תרגילי משקל גוף (חזרות)")
-    st.markdown("עדכן את מקסימום החזרות הרצוף שאתה מבצע.")
+    st.markdown("עדכן את מקסימום החזרות הרצוף שאתה מבצע:")
     cols_g = st.columns(2)
     gym_items = list(gym_dict.items())
     half_g = len(gym_items) // 2
@@ -261,29 +249,6 @@ with tab_gym:
         with target_col:
             val = st.number_input(exercise, value=int(reps), step=1, key=f"gym_{exercise}")
             updated_gym[exercise] = val
-
-# --- טאב 4: מחשבון אחוזים חכם ---
-with tab_calc:
-    st.markdown("### 🧮 מחשבון אחוזים לעבודה (Percentage Calculator)")
-    st.markdown("בחר תרגיל וחשב באופן מיידי את משקלי העבודה שלך לאימון (לפי אחוזים מ-1RM).")
-    
-    calc_col1, calc_col2 = st.columns([2, 1])
-    with calc_col1:
-        selected_exercise = st.selectbox("בחר תרגיל מתוך השיאים שלך:", list(wl_dict.keys()))
-    with calc_col2:
-        custom_base = st.number_input("או הזן משקל ידני (ק\"ג):", value=float(wl_dict.get(selected_exercise, 100)), step=5.0)
-    
-    if custom_base > 0:
-        st.markdown(f"#### תוצאות אחוזים עבור **{selected_exercise}** ({custom_base} ק\"ג):")
-        
-        percentages = [50, 60, 65, 70, 75, 80, 85, 90, 95, 100]
-        perc_data = []
-        for p in percentages:
-            calculated_weight = round((custom_base * p) / 100, 1)
-            perc_data.append({"אחוז (Percentage)": f"{p}%", "משקל עבודה (ק\"ג)": calculated_weight})
-        
-        df_perc = pd.DataFrame(perc_data)
-        st.dataframe(df_perc, hide_index=True, use_container_width=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
