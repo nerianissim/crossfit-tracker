@@ -12,7 +12,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# עיצוב CSS מתקדם ומקצועי למצב בהיר עם יישור מלא לימין (RTL)
+# עיצוב CSS מתקדם (RTL לממשק, אבל שומר על תצוגה נכונה בטבלאות)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap');
@@ -21,12 +21,10 @@ st.markdown("""
         background-color: #F8FAFC;
         color: #1E293B;
         font-family: 'Heebo', sans-serif;
-        direction: rtl;
-        text-align: right;
     }
     
-    /* יישור כל האלמנטים והטקסטים לימין */
-    h1, h2, h3, h4, h5, h6, p, span, label, div {
+    /* יישור טקסטים כלליים לימין */
+    h1, h2, h3, h4, h5, h6, p, span, label {
         direction: rtl;
         text-align: right;
     }
@@ -56,7 +54,7 @@ st.markdown("""
         text-align: center;
     }
 
-    /* עיצוב לשוניות (Tabs) בהירות */
+    /* עיצוב לשוניות (Tabs) */
     .stTabs [data-baseweb="tab-list"] {
         justify-content: center;
         gap: 10px;
@@ -65,7 +63,6 @@ st.markdown("""
         border-radius: 12px;
         border: 1px solid #E2E8F0;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-        direction: rtl;
     }
     .stTabs [data-baseweb="tab"] {
         background-color: transparent;
@@ -83,7 +80,7 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
     }
 
-    /* עיצוב שדות המספרים (כארדים לבנים נקיים) */
+    /* עיצוב שדות המספרים */
     div.stNumberInput {
         background-color: #FFFFFF;
         padding: 14px;
@@ -91,12 +88,8 @@ st.markdown("""
         border: 1px solid #E2E8F0;
         margin-bottom: 14px;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        direction: rtl;
         text-align: right;
-    }
-    div.stNumberInput:hover {
-        border-color: #3B82F6;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08);
     }
     div.stNumberInput label {
         color: #334155 !important;
@@ -105,10 +98,9 @@ st.markdown("""
         text-align: right !important;
     }
 
-    /* יישור תיבות בחירה (Selectbox) לימין */
     div.stSelectbox {
-        text-align: right;
         direction: rtl;
+        text-align: right;
     }
 
     /* כפתור שמירה מקצועי ובולט */
@@ -127,21 +119,17 @@ st.markdown("""
         letter-spacing: 1px;
     }
     .stButton>button:hover {
-        background: linear-gradient(135deg, #1D4ED8 100%, #1E40AF 100%);
+        background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%);
         box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
         transform: translateY(-2px);
     }
 
-    /* טבלאות נתונים במצב בהיר מיושרות לימין */
+    /* טבלאות נתונים במבנה נקי ומסודר (ללא עיוות שפות) */
     .dataframe {
         background-color: #FFFFFF !important;
         color: #1E293B !important;
         border-radius: 10px !important;
         border: 1px solid #E2E8F0 !important;
-        text-align: right !important;
-    }
-    th, td {
-        text-align: right !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -245,7 +233,6 @@ with tab_wl:
 
     st.markdown("<hr style='border-color: #E2E8F0; margin: 2rem 0;'>", unsafe_allow_html=True)
     
-    # מחשבון אחוזים ו-RIR מובנה
     st.markdown("### 🧮 מחשבון אחוזים ו-RIR (Reps in Reserve)")
     st.markdown("בחר תרגיל כדי לראות את משקלי העבודה המותאמים לפי טווח חזרות בבנק (RIR):")
     
@@ -256,12 +243,13 @@ with tab_wl:
         custom_base = st.number_input("משקל בסיס (1RM בק\"ג):", value=float(wl_dict.get(selected_exercise, 100)), step=5.0)
     
     if custom_base > 0:
+        # סדר עמודות נכון: תיאור משמאל/מימין באופן טבעי לפי שפה
         rir_data = [
-            {"RIR (חזרות בבנק)": "0 RIR (כשל מוחלט)", "אחוז משוער מ-1RM": "100%", "משקל עבודה": round(custom_base * 1.0, 1)},
-            {"RIR (חזרות בבנק)": "1 RIR (יכולת לחזרה 1 נוספת)", "אחוז משוער מ-1RM": "92%", "משקל עבודה": round(custom_base * 0.92, 1)},
-            {"RIR (חזרות בבנק)": "2 RIR (יכולת ל-2 חזרות נוספות)", "אחוז משוער מ-1RM": "86%", "משקל עבודה": round(custom_base * 0.86, 1)},
-            {"RIR (חזרות בבנק)": "3 RIR (עצימות בינונית-גבוהה)", "אחוז משוער מ-1RM": "80%", "משקל עבודה": round(custom_base * 0.80, 1)},
-            {"RIR (חזרות בבנק)": "4+ RIR (עצימות טכנית/נפח)", "אחוז משוער מ-1RM": "70-75%", "משקל עבודה": round(custom_base * 0.72, 1)},
+            {"תיאור עצימות": "כשל מוחלט (0 RIR)", "אחוז מ-1RM": "100%", "משקל עבודה (ק\"ג)": round(custom_base * 1.0, 1)},
+            {"תיאור עצימות": "חזרה 1 נוספת בבנק (1 RIR)", "אחוז מ-1RM": "92%", "משקל עבודה (ק\"ג)": round(custom_base * 0.92, 1)},
+            {"תיאור עצימות": "2 חזרות נוספות בבנק (2 RIR)", "אחוז מ-1RM": "86%", "משקל עבודה (ק\"ג)": round(custom_base * 0.86, 1)},
+            {"תיאור עצימות": "עצימות בינונית-גבוהה (3 RIR)", "אחוז מ-1RM": "80%", "משקל עבודה (ק\"ג)": round(custom_base * 0.80, 1)},
+            {"תיאור עצימות": "עצימות טכנית / נפח (4+ RIR)", "אחוז מ-1RM": "72%", "משקל עבודה (ק\"ג)": round(custom_base * 0.72, 1)},
         ]
         df_rir = pd.DataFrame(rir_data)
         st.dataframe(df_rir, hide_index=True, use_container_width=True)
