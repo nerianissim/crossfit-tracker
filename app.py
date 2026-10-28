@@ -12,7 +12,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# הזרקת עיצוב CSS מותאם אישית (Dark Mode יוקרתי, כרטיסיות מוקפדות ויישור לימין)
+# עיצוב CSS נקי, יוקרתי ומותאם אישית (ללא חסימת שדות)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap');
@@ -21,93 +21,49 @@ st.markdown("""
         background-color: #0E1117;
         color: #F8FAFC;
         font-family: 'Heebo', sans-serif;
-        direction: rtl;
-        text-align: right;
     }
     
+    /* כותרת ראשית */
     .hero-container {
         text-align: center;
-        padding: 2rem 0 1rem 0;
+        padding: 1.5rem 0 1rem 0;
         border-bottom: 2px solid #1F2937;
         margin-bottom: 2rem;
     }
     .main-title {
-        font-size: 3rem;
+        font-size: 2.8rem;
         font-weight: 900;
         color: #FFFFFF;
         letter-spacing: 2px;
         margin: 0;
-        text-transform: uppercase;
     }
     .sub-title {
-        font-size: 1.1rem;
+        font-size: 1rem;
         color: #9CA3AF;
-        margin-top: 0.5rem;
-        font-weight: 400;
+        margin-top: 0.4rem;
     }
 
-    .stTabs [data-baseweb="tab-list"] {
-        justify-content: center;
-        gap: 10px;
-        background-color: #161B22;
-        padding: 10px;
-        border-radius: 12px;
-    }
-    .stTabs [data-baseweb="tab"] {
-        background-color: #21262D;
-        color: #9CA3AF;
-        border-radius: 8px;
-        padding: 10px 20px;
-        font-weight: 600;
-        border: none;
-    }
-    .stTabs [aria-selected="true"] {
-        background-color: #2563EB !important;
-        color: #FFFFFF !important;
-    }
-
-    div.stNumberInput {
-        background-color: #161B22;
-        padding: 12px;
-        border-radius: 10px;
-        border: 1px solid #30363D;
-        margin-bottom: 12px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
-    }
-    div.stNumberInput label {
-        color: #E2E8F0 !important;
-        font-weight: 600 !important;
-        font-size: 1rem !important;
-    }
-
+    /* עיצוב כפתור השמירה */
     .stButton>button {
         width: 100%;
         background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
         color: white;
-        border-radius: 12px;
+        border-radius: 10px;
         font-weight: 700;
-        font-size: 1.2rem;
-        padding: 0.8rem;
+        font-size: 1.1rem;
+        padding: 0.7rem;
         border: none;
-        box-shadow: 0 8px 16px -4px rgba(37, 99, 235, 0.4);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
         transition: all 0.3s ease;
-        text-transform: uppercase;
     }
     .stButton>button:hover {
         background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%);
-        box-shadow: 0 10px 20px -4px rgba(37, 99, 235, 0.6);
         transform: translateY(-2px);
-    }
-
-    .dataframe {
-        background-color: #161B22 !important;
-        color: #F8FAFC !important;
-        border-radius: 10px !important;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# כותרת ראשית מרכזית מקצועית
+# כותרת ראשית מרכזית
 st.markdown("""
     <div class="hero-container">
         <p class="main-title">⚡ CROSSFIT</p>
@@ -161,7 +117,21 @@ if not data:
 tab1, tab2 = st.tabs(["🏋️ Weightlifting", "🤸 Gymnastics"])
 
 with tab1:
-    st.markdown("### 🏋️ משקלי עבודה (ק\"ג)")
+    st.subheader("🏋️ משקלי עבודה (ק\"ג)")
     updated_wl = {}
     cols = st.columns(2)
-    items = list
+    items = list(data["Weightlifting"].items())
+    half = len(items) // 2
+    
+    for i, (exercise, weight) in enumerate(items):
+        target_col = cols[0] if i < half else cols[1]
+        with target_col:
+            val = st.number_input(f"{exercise}", value=float(weight), step=2.5, format="%.1f", key=f"wl_{exercise}")
+            updated_wl[exercise] = val
+
+with tab2:
+    st.subheader("🤸 תרגילי משקל גוף (חזרות)")
+    updated_gym = {}
+    cols_g = st.columns(2)
+    gym_items = list(data["Gymnastics"].items())
+    half_g = len(gym_items)
