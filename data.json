@@ -1,0 +1,29 @@
+{
+    "Weightlifting": {
+        "Back Squat": 120,
+        "Front Squat": 65,
+        "Overhead Squat": 0,
+        "Deadlift": 110,
+        "Power Clean": 70,
+        "Squat Clean": 0,
+        "Squat Snatch": 0,
+        "Clean & Jerk": 0,
+        "Push Jerk": 60,
+        "Split Jerk": 0,
+        "Strict Press": 50,
+        "Push-Press": 55,
+        "Bench Press": 60,
+        "Power Snatch": 55
+    },
+    "Gymnastics": {
+        "Strict Pull-Ups": 0,
+        "Kipping Pull-Ups": 0,
+        "Strict Handstand Push-Ups": 0,
+        "Kipping Handstand Push-Ups": 0,
+        "Strict Chest to Bar Pull-Ups": 0,
+        "Kipping Chest to Bar Pull-Ups": 0,
+        "Ring Muscle-Ups": 0,
+        "Toes to Bar": 0,
+        "Bar Muscle-Ups": 0
+    }
+}
