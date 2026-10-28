@@ -8,7 +8,7 @@ st.set_page_config(page_title="CrossFit PR Tracker", page_icon="🏋️‍♂️
 st.title("🏋️‍♂️ מעקב שיאי קרוספיט")
 
 # הכנס כאן את ה-ID של הגיליון שלך מתוך הכתובת ב-Google Sheets
-SHEET_ID = "YOUR_SPREADSHEET_ID_HERE"
+SHEET_ID = "1oKK8oJ2N_z0I3oGKYJPhG-AUNf4hR9VGNNWpg6wUayc"
 
 @st.cache_data(ttl=1)
 def load_data():
