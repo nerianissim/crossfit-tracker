@@ -12,7 +12,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# הזרקת עיצוב CSS מותאם אישית (Dark Mode מודרני, כרטיסיות מוקפדות ויישור לימין)
+# הזרקת עיצוב CSS מותאם אישית (Dark Mode יוקרתי, כרטיסיות מוקפדות ויישור לימין)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap');
@@ -69,7 +69,7 @@ st.markdown("""
         color: #FFFFFF !important;
     }
 
-    /* כרטיסיות קטנות לתרגילים (מסגרות עדינות) */
+    /* כרטיסיות קטנות לתרגילים */
     div.stNumberInput {
         background-color: #161B22;
         padding: 12px;
@@ -94,58 +94,4 @@ st.markdown("""
         font-size: 1.2rem;
         padding: 0.8rem;
         border: none;
-        box-shadow: 0 8px 16px -4px rgba(37, 99, 235, 0.4);
-        transition: all 0.3s ease;
-        text-transform: uppercase;
-    }
-    .stButton>button:hover {
-        background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%);
-        box-shadow: 0 10px 20px -4px rgba(37, 99, 235, 0.6);
-        transform: translateY(-2px);
-    }
-
-    /* טבלאות סיכום מעוצבות */
-    .dataframe {
-        background-color: #161B22 !important;
-        color: #F8FAFC !important;
-        border-radius: 10px !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-# כותרת ראשית מרכזית מקצועית
-st.markdown("""
-    <div class="hero-container">
-        <p class="main-title">⚡ CROSSFIT</p>
-        <p class="sub-title">מערכת מעקב שיאים אישיים מתקדמת</p>
-    </div>
-""", unsafe_allow_html=True)
-
-# טעינת הגדרות אבטחה מ-Secrets
-try:
-    TOKEN = st.secrets["GITHUB_TOKEN"]
-    REPO = st.secrets["REPO_NAME"]
-except Exception:
-    st.error("⚠️ יש להגדיר תקינות של GITHUB_TOKEN ו-REPO ב-Streamlit Secrets.")
-    st.stop()
-
-FILE_PATH = "data.json"
-API_URL = f"https://api.github.com/repos/{REPO}/contents/{FILE_PATH}"
-
-headers = {
-    "Authorization": f"Bearer {TOKEN}",
-    "Accept": "application/vnd.github.v3+json"
-}
-
-@st.cache_data(ttl=1)
-def load_data_from_github():
-    response = requests.get(API_URL, headers=headers)
-    if response.status_code == 200:
-        file_info = response.json()
-        file_content = base64.b64decode(file_info["content"]).decode("utf-8")
-        return json.loads(file_content), file_info["sha"]
-    return None, None
-
-def save_data_to_github(data_dict, sha):
-    updated_content = json.dumps(data_dict, indent=4, ensure_ascii=False)
-    encoded_content = base64.b64encode(
+        box-
