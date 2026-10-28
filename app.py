@@ -183,4 +183,41 @@ with tab1:
     for i, (exercise, weight) in enumerate(items):
         target_col = cols[0] if i < half else cols[1]
         with target_col:
-            val = st.number_input(f"{exercise}", value=float(weight), step=2.5, format="%.1f", key=f
+            val = st.number_input(exercise, value=float(weight), step=2.5, format="%.1f", key=f"wl_{exercise}")
+            updated_wl[exercise] = val
+
+with tab2:
+    st.markdown("### 🤸 תרגילי משקל גוף (חזרות)")
+    updated_gym = {}
+    cols_g = st.columns(2)
+    gym_items = list(data["Gymnastics"].items())
+    half_g = len(gym_items) // 2
+    
+    for i, (exercise, reps) in enumerate(gym_items):
+        target_col = cols_g[0] if i < half_g else cols_g[1]
+        with target_col:
+            val = st.number_input(exercise, value=int(reps), step=1, key=f"gym_{exercise}")
+            updated_gym[exercise] = val
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# כפתור שמירה ראשי בולט ומעוצב
+col_btn1, col_btn2, col_btn3 = st.columns([1, 3, 1])
+with col_btn2:
+    if st.button("💾 שמור שיאים חדשים במערכת", type="primary"):
+        new_data = {
+            "Weightlifting": updated_wl,
+            "Gymnastics": updated_gym
+        }
+        success = save_data_to_github(new_data, file_sha)
+        if success:
+            st.success("השיאים עודכנו ונשמרו בהצלחה ב-GitHub! 🎉")
+            st.cache_data.clear()
+            st.rerun()
+        else:
+            st.error("שגיאה בשמירת הנתונים. ודא שהטוקן תקין.")
+
+st.markdown("<hr style='border-color: #1F2937; margin: 2rem 0;'>", unsafe_allow_html=True)
+
+# חלק סיכום נקי
+st.markdown("### 📊 סי
