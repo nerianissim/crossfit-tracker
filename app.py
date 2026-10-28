@@ -23,7 +23,6 @@ st.markdown("""
         font-family: 'Heebo', sans-serif;
     }
     
-    /* כותרת ראשית יוקרתית בהירה */
     .hero-container {
         text-align: center;
         padding: 2rem 0 1.5rem 0;
@@ -46,7 +45,6 @@ st.markdown("""
         font-weight: 400;
     }
 
-    /* עיצוב לשוניות (Tabs) בהירות */
     .stTabs [data-baseweb="tab-list"] {
         justify-content: center;
         gap: 10px;
@@ -60,7 +58,7 @@ st.markdown("""
         background-color: transparent;
         color: #64748B;
         border-radius: 8px;
-        padding: 10px 24px;
+        padding: 10px 20px;
         font-weight: 600;
         border: none;
         transition: all 0.3s ease;
@@ -71,7 +69,6 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
     }
 
-    /* עיצוב שדות המספרים (כארדים לבנים נקיים) */
     div.stNumberInput {
         background-color: #FFFFFF;
         padding: 14px;
@@ -91,7 +88,6 @@ st.markdown("""
         font-size: 1.05rem !important;
     }
 
-    /* כפתור שמירה מקצועי ובולט */
     .stButton>button {
         width: 100%;
         background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
@@ -112,7 +108,6 @@ st.markdown("""
         transform: translateY(-2px);
     }
 
-    /* טבלאות נתונים במצב בהיר */
     .dataframe {
         background-color: #FFFFFF !important;
         color: #1E293B !important;
@@ -122,11 +117,10 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# כותרת ראשית מרכזית
 st.markdown("""
     <div class="hero-container">
         <p class="main-title">⚡ CROSSFIT PRO</p>
-        <p class="sub-title">מערכת ניהול שיאים אישיים ומדדי ביצוע</p>
+        <p class="sub-title">מערכת ניהול שיאים, RIR ומדדי ביצוע</p>
     </div>
 """, unsafe_allow_html=True)
 
@@ -154,6 +148,9 @@ DEFAULT_DATA = {
     "Gymnastics": {
         "Strict Pull-Ups": 15, "Kipping Pull-Ups": 40, "Strict Handstand Push-Ups": 10,
         "Ring Muscle-Ups": 5, "Toes to Bar": 30, "Bar Muscle-Ups": 8
+    },
+    "Metcon_Benchmarks": {
+        "500m Row (sec)": 95, "3000m Run (min)": 18.0, "Fran (sec)": 240, "Grace (sec)": 180
     }
 }
 
@@ -177,7 +174,7 @@ def save_data_to_github(data_dict, sha):
     encoded_content = base64.b64encode(updated_content.encode("utf-8")).decode("utf-8")
     
     payload = {
-        "message": "Update CrossFit PRs via Pro Dashboard",
+        "message": "Update CrossFit PRs & RIR via Pro Dashboard",
         "content": encoded_content
     }
     if sha:
@@ -190,20 +187,23 @@ data, file_sha = load_data_from_github()
 
 wl_dict = data.get("Weightlifting", DEFAULT_DATA["Weightlifting"])
 gym_dict = data.get("Gymnastics", DEFAULT_DATA["Gymnastics"])
+metcon_dict = data.get("Metcon_Benchmarks", DEFAULT_DATA["Metcon_Benchmarks"])
 
-# שתי לשוניות בלבד כמבוקש
-tab_wl, tab_gym = st.tabs([
-    "🏋️ משקלי עבודה (Weightlifting)", 
-    "🤸 ג׳ימנסטיקה (Gymnastics)"
+# שלוש לשוניות מרכזיות
+tab_wl, tab_gym, tab_metcon = st.tabs([
+    "🏋️ משקלי עבודה & RIR", 
+    "🤸 ג׳ימנסטיקה", 
+    "⏱️ בנצ'מארקים ומדדי אירובי"
 ])
 
 updated_wl = {}
 updated_gym = {}
+updated_metcon = {}
 
-# --- טאב 1: משקלי עבודה + מחשבון אחוזים ---
+# --- טאב 1: משקלי עבודה + מחשבון אחוזים ו-RIR ---
 with tab_wl:
     st.markdown("### 🏋️ ניהול משקלי עבודה (ק\"ג)")
-    st.markdown("עדכן את שיאי המשקל שלך:")
+    st.markdown("עדכן את שיאי המשקל (1RM) שלך:")
     cols = st.columns(2)
     items = list(wl_dict.items())
     half = len(items) // 2
@@ -216,30 +216,32 @@ with tab_wl:
 
     st.markdown("<hr style='border-color: #E2E8F0; margin: 2rem 0;'>", unsafe_allow_html=True)
     
-    # מחשבון אחוזים מובנה בלשונית המשקלים
-    st.markdown("### 🧮 מחשבון אחוזים לעבודה (Percentage Calculator)")
-    st.markdown("בחר תרגיל או הזן משקל לבדיקת אחוזי עבודה אימוניים:")
+    # מחשבון אחוזים ו-RIR מובנה
+    st.markdown("### 🧮 מחשבון אחוזים ו-RIR (Reps in Reserve)")
+    st.markdown("בחר תרגיל כדי לראות את משקלי העבודה המותאמים לפי טווח חזרות בבנק (RIR):")
     
     calc_col1, calc_col2 = st.columns([2, 1])
     with calc_col1:
         selected_exercise = st.selectbox("בחר תרגיל מתוך השיאים:", list(wl_dict.keys()))
     with calc_col2:
-        custom_base = st.number_input("משקל בסיס (ק\"ג):", value=float(wl_dict.get(selected_exercise, 100)), step=5.0)
+        custom_base = st.number_input("משקל בסיס (1RM בק\"ג):", value=float(wl_dict.get(selected_exercise, 100)), step=5.0)
     
     if custom_base > 0:
-        percentages = [50, 60, 65, 70, 75, 80, 85, 90, 95, 100]
-        perc_data = []
-        for p in percentages:
-            calculated_weight = round((custom_base * p) / 100, 1)
-            perc_data.append({"אחוז": f"{p}%", "משקל עבודה (ק\"ג)": calculated_weight})
-        
-        df_perc = pd.DataFrame(perc_data)
-        st.dataframe(df_perc, hide_index=True, use_container_width=True)
+        # טבלת RIR ו-Percentage מקצועית לקרוספיט
+        rir_data = [
+            {"RIR (חזרות בבנק)": "0 RIR (כשל מוחלט)", "אחוז משוער מ-1RM": "100%", "משקל עבודה": round(custom_base * 1.0, 1)},
+            {"RIR (חזרות בבנק)": "1 RIR (יכולת לחזרה 1 נוספת)", "אחוז משוער מ-1RM": "92%", "משקל עבודה": round(custom_base * 0.92, 1)},
+            {"RIR (חזרות בבנק)": "2 RIR (יכולת ל-2 חזרות נוספות)", "אחוז משוער מ-1RM": "86%", "משקל עבודה": round(custom_base * 0.86, 1)},
+            {"RIR (חזרות בבנק)": "3 RIR (עצימות בינונית-גבוהה)", "אחוז משוער מ-1RM": "80%", "משקל עבודה": round(custom_base * 0.80, 1)},
+            {"RIR (חזרות בבנק)": "4+ RIR (עצימות טכנית/נפח)", "אחוז משוער מ-1RM": "70-75%", "משקל עבודה": round(custom_base * 0.72, 1)},
+        ]
+        df_rir = pd.DataFrame(rir_data)
+        st.dataframe(df_rir, hide_index=True, use_container_width=True)
 
 # --- טאב 2: ג'ימנסטיקה ---
 with tab_gym:
     st.markdown("### 🤸 ניהול תרגילי משקל גוף (חזרות)")
-    st.markdown("עדכן את מקסימום החזרות הרצוף שאתה מבצע:")
+    st.markdown("עדכן את מקסימום החזרות הרצוף (Unbroken) שאתה מבצע:")
     cols_g = st.columns(2)
     gym_items = list(gym_dict.items())
     half_g = len(gym_items) // 2
@@ -249,6 +251,20 @@ with tab_gym:
         with target_col:
             val = st.number_input(exercise, value=int(reps), step=1, key=f"gym_{exercise}")
             updated_gym[exercise] = val
+
+# --- טאב 3: בנצ'מארקים ומדדי אירובי ---
+with tab_metcon:
+    st.markdown("### ⏱️ בנצ'מארקים ומדדי אירובי (Metcon & Endurance)")
+    st.markdown("מעקב אחר תוצאות במבחני כושר מרכזיים (זמנים בשניות או דקות):")
+    cols_m = st.columns(2)
+    metcon_items = list(metcon_dict.items())
+    half_m = len(metcon_items) // 2
+    
+    for i, (metric, val_m) in enumerate(metcon_items):
+        target_col = cols_m[0] if i < half_m else cols_m[1]
+        with target_col:
+            val = st.number_input(metric, value=float(val_m), step=1.0, format="%.1f", key=f"met_{metric}")
+            updated_metcon[metric] = val
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -261,7 +277,8 @@ with col_btn2:
         with st.spinner("מעדכן את בסיס הנתונים ב-GitHub..."):
             new_data = {
                 "Weightlifting": updated_wl if updated_wl else wl_dict,
-                "Gymnastics": updated_gym if updated_gym else gym_dict
+                "Gymnastics": updated_gym if updated_gym else gym_dict,
+                "Metcon_Benchmarks": updated_metcon if updated_metcon else metcon_dict
             }
             success = save_data_to_github(new_data, file_sha)
             if success:
