@@ -245,4 +245,63 @@ with tab_wl:
     for i, (exercise, weight) in enumerate(items):
         target_col = cols[0] if i < half else cols[1]
         with target_col:
-            val = st.number_input(exercise, value=float(weight), step=2.5, format="%.1f", key
+            val = st.number_input(exercise, value=float(weight), step=2.5, format="%.1f", key=f"wl_{exercise}")
+            updated_wl[exercise] = val
+
+# --- טאב 3: ג'ימנסטיקה ---
+with tab_gym:
+    st.markdown("### 🤸 ניהול תרגילי משקל גוף (חזרות)")
+    st.markdown("עדכן את מקסימום החזרות הרצוף שאתה מבצע.")
+    cols_g = st.columns(2)
+    gym_items = list(gym_dict.items())
+    half_g = len(gym_items) // 2
+    
+    for i, (exercise, reps) in enumerate(gym_items):
+        target_col = cols_g[0] if i < half_g else cols_g[1]
+        with target_col:
+            val = st.number_input(exercise, value=int(reps), step=1, key=f"gym_{exercise}")
+            updated_gym[exercise] = val
+
+# --- טאב 4: מחשבון אחוזים חכם ---
+with tab_calc:
+    st.markdown("### 🧮 מחשבון אחוזים לעבודה (Percentage Calculator)")
+    st.markdown("בחר תרגיל וחשב באופן מיידי את משקלי העבודה שלך לאימון (לפי אחוזים מ-1RM).")
+    
+    calc_col1, calc_col2 = st.columns([2, 1])
+    with calc_col1:
+        selected_exercise = st.selectbox("בחר תרגיל מתוך השיאים שלך:", list(wl_dict.keys()))
+    with calc_col2:
+        custom_base = st.number_input("או הזן משקל ידני (ק\"ג):", value=float(wl_dict.get(selected_exercise, 100)), step=5.0)
+    
+    if custom_base > 0:
+        st.markdown(f"#### תוצאות אחוזים עבור **{selected_exercise}** ({custom_base} ק\"ג):")
+        
+        percentages = [50, 60, 65, 70, 75, 80, 85, 90, 95, 100]
+        perc_data = []
+        for p in percentages:
+            calculated_weight = round((custom_base * p) / 100, 1)
+            perc_data.append({"אחוז (Percentage)": f"{p}%", "משקל עבודה (ק\"ג)": calculated_weight})
+        
+        df_perc = pd.DataFrame(perc_data)
+        st.dataframe(df_perc, hide_index=True, use_container_width=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# --- אזור כפתור שמירה מרכזי ---
+st.markdown("<hr style='border-color: #E2E8F0; margin: 1.5rem 0;'>", unsafe_allow_html=True)
+
+col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
+with col_btn2:
+    if st.button("💾 שמור שיאים חדשים בענן", type="primary"):
+        with st.spinner("מעדכן את בסיס הנתונים ב-GitHub..."):
+            new_data = {
+                "Weightlifting": updated_wl if updated_wl else wl_dict,
+                "Gymnastics": updated_gym if updated_gym else gym_dict
+            }
+            success = save_data_to_github(new_data, file_sha)
+            if success:
+                st.toast("השיאים נשמרו בהצלחה בענן! 🎉", icon="✅")
+                st.cache_data.clear()
+                st.rerun()
+            else:
+                st.error("שגיאה בשמירת הנתונים מול GitHub.")
