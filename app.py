@@ -1,67 +1,65 @@
 import streamlit as st
 import pandas as pd
+from streamlit_gsheets import GSheetsConnection
 
 st.set_page_config(page_title="CrossFit PR Tracker", page_icon="🏋️‍♂️", layout="centered")
 
-st.title("🏋️‍♂️ שיאים אישיים - CrossFit PRs")
+st.title("🏋️‍♂️ מעקב שיאי קרוספיט - מחובר ל-Google Sheets")
 
-# נתונים התחלתיים מתוך התמונה
-default_weightlifting = {
-    "Back Squat": 120.0,
-    "Front Squat": 65.0,
-    "Overhead Squat": 0.0,
-    "Deadlift": 110.0,
-    "Power Clean": 70.0,
-    "Squat Clean": 0.0,
-    "Squat Snatch": 0.0,
-    "Clean & Jerk": 0.0,
-    "Push Jerk": 60.0,
-    "Split Jerk": 0.0,
-    "Strict Press": 50.0,
-    "Push-Press": 55.0,
-    "Bench Press": 60.0,
-    "Power Snatch": 55.0,
-}
+# יצירת חיבור ל-Google Sheets
+conn = st.connection("gsheets", type=GSheetsConnection)
 
-default_gymnastics = {
-    "Strict Pull-Ups": 0,
-    "Kipping Pull-Ups": 0,
-    "Strict Handstand Push-Ups": 0,
-    "Kipping Handstand Push-Ups": 0,
-    "Strict Chest to Bar Pull-Ups": 0,
-    "Kipping Chest to Bar Pull-Ups": 0,
-    "Ring Muscle-Ups": 0,
-    "Toes to Bar": 0,
-    "Bar Muscle-Ups": 0,
-}
+# טעינת הנתונים מהגיליונות (יש לוודא ששמות הטאבים תואמים)
+try:
+    df_wl = conn.read(worksheet="Weightlifting", usecols=[0, 1], ttl=0)
+    df_gym = conn.read(worksheet="Gymnastics", usecols=[0, 1], ttl=0)
+except Exception as e:
+    st.error(f"שגיאה בטעינת הנתונים מ-Google Sheets: {e}")
+    st.stop()
 
-# טאבים להפרדה נוחה
+# טאבים להפרדה
 tab1, tab2 = st.tabs(["🏋️ Weightlifting & Powerlifting", "🤸 Gymnastics & Calisthenics"])
 
 with tab1:
-    st.subheader("משקלי עבודה (ק\"ג)")
-    wl_data = {}
-    for exercise, weight in default_weightlifting.items():
-        val = st.number_input(f"{exercise}", value=weight, step=2.5, format="%.1f", key=exercise)
-        wl_data[exercise] = val
+    st.subheader("עדכון משקלי עבודה (ק\"ג)")
+    updated_wl = []
+    for index, row in df_wl.iterrows():
+        exercise = row["Exercise"]
+        current_weight = float(row["Weight"]) if pd.notna(row["Weight"]) else 0.0
+        new_weight = st.number_input(f"{exercise}", value=current_weight, step=2.5, format="%.1f", key=f"wl_{exercise}")
+        updated_wl.append({"Exercise": exercise, "Weight": new_weight})
+    
+    df_wl_new = pd.DataFrame(updated_wl)
 
 with tab2:
-    st.subheader("תרגילי גמישות וממשקל גוף (חזרות max)")
-    gym_data = {}
-    for exercise, reps in default_gymnastics.items():
-        val = st.number_input(f"{exercise}", value=reps, step=1, key=exercise)
-        gym_data[exercise] = val
+    st.subheader("עדכון תרגילי גמישות וממשקל גוף (חזרות)")
+    updated_gym = []
+    for index, row in df_gym.iterrows():
+        exercise = row["Exercise"]
+        current_reps = int(row["Reps"]) if pd.notna(row["Reps"]) else 0
+        new_reps = st.number_input(f"{exercise}", value=current_reps, step=1, key=f"gym_{exercise}")
+        updated_gym.append({"Exercise": exercise, "Reps": new_reps})
+        
+    df_gym_new = pd.DataFrame(updated_gym)
+
+# כפתור שמירה ל-Google Sheets
+if st.button("💾 שמור שיאים חדשים ל-Google Sheets", type="primary"):
+    try:
+        conn.update(worksheet="Weightlifting", data=df_wl_new)
+        conn.update(worksheet="Gymnastics", data=df_gym_new)
+        st.success("השיאים עודכנו בהצלחה ב-Google Sheets! 🎉")
+        st.rerun()
+    except Exception as e:
+        st.error(f"שגיאה בשמירת הנתונים: {e}")
 
 st.divider()
-st.subheader("📊 סיכום שיאים עדכני")
+st.subheader("📊 סיכום שיאים נוכחי")
 col1, col2 = st.columns(2)
 
 with col1:
     st.markdown("**Weightlifting**")
-    df_wl = pd.DataFrame(list(wl_data.items()), columns=["תרגיל", "משקל (ק\"ג)"])
-    st.dataframe(df_wl[df_wl["משקל (ק\"ג)"] > 0], hide_index=True, use_container_width=True)
+    st.dataframe(df_wl[df_wl["Weight"] > 0], hide_index=True, use_container_width=True)
 
 with col2:
     st.markdown("**Gymnastics**")
-    df_gym = pd.DataFrame(list(gym_data.items()), columns=["תרגיל", "חזרות"])
-    st.dataframe(df_gym[df_gym["חזרות"] > 0], hide_index=True, use_container_width=True)
+    st.dataframe(df_gym[df_gym["Reps"] > 0], hide_index=True, use_container_width=True)
