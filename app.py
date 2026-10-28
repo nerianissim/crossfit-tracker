@@ -12,7 +12,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# עיצוב CSS מתקדם ומקצועי למצב בהיר (Light Mode נקי ויוקרתי)
+# עיצוב CSS מתקדם ומקצועי למצב בהיר עם יישור מלא לימין (RTL)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap');
@@ -21,8 +21,17 @@ st.markdown("""
         background-color: #F8FAFC;
         color: #1E293B;
         font-family: 'Heebo', sans-serif;
+        direction: rtl;
+        text-align: right;
     }
     
+    /* יישור כל האלמנטים והטקסטים לימין */
+    h1, h2, h3, h4, h5, h6, p, span, label, div {
+        direction: rtl;
+        text-align: right;
+    }
+
+    /* כותרת ראשית יוקרתית בהירה */
     .hero-container {
         text-align: center;
         padding: 2rem 0 1.5rem 0;
@@ -37,14 +46,17 @@ st.markdown("""
         color: #0F172A;
         letter-spacing: 2px;
         margin: 0;
+        text-align: center;
     }
     .sub-title {
         font-size: 1.1rem;
         color: #64748B;
         margin-top: 0.5rem;
         font-weight: 400;
+        text-align: center;
     }
 
+    /* עיצוב לשוניות (Tabs) בהירות */
     .stTabs [data-baseweb="tab-list"] {
         justify-content: center;
         gap: 10px;
@@ -53,6 +65,7 @@ st.markdown("""
         border-radius: 12px;
         border: 1px solid #E2E8F0;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        direction: rtl;
     }
     .stTabs [data-baseweb="tab"] {
         background-color: transparent;
@@ -62,6 +75,7 @@ st.markdown("""
         font-weight: 600;
         border: none;
         transition: all 0.3s ease;
+        text-align: center;
     }
     .stTabs [aria-selected="true"] {
         background-color: #2563EB !important;
@@ -69,6 +83,7 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
     }
 
+    /* עיצוב שדות המספרים (כארדים לבנים נקיים) */
     div.stNumberInput {
         background-color: #FFFFFF;
         padding: 14px;
@@ -77,6 +92,7 @@ st.markdown("""
         margin-bottom: 14px;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
         transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        text-align: right;
     }
     div.stNumberInput:hover {
         border-color: #3B82F6;
@@ -86,8 +102,16 @@ st.markdown("""
         color: #334155 !important;
         font-weight: 600 !important;
         font-size: 1.05rem !important;
+        text-align: right !important;
     }
 
+    /* יישור תיבות בחירה (Selectbox) לימין */
+    div.stSelectbox {
+        text-align: right;
+        direction: rtl;
+    }
+
+    /* כפתור שמירה מקצועי ובולט */
     .stButton>button {
         width: 100%;
         background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
@@ -103,16 +127,21 @@ st.markdown("""
         letter-spacing: 1px;
     }
     .stButton>button:hover {
-        background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%);
+        background: linear-gradient(135deg, #1D4ED8 100%, #1E40AF 100%);
         box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
         transform: translateY(-2px);
     }
 
+    /* טבלאות נתונים במצב בהיר מיושרות לימין */
     .dataframe {
         background-color: #FFFFFF !important;
         color: #1E293B !important;
         border-radius: 10px !important;
         border: 1px solid #E2E8F0 !important;
+        text-align: right !important;
+    }
+    th, td {
+        text-align: right !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -227,7 +256,6 @@ with tab_wl:
         custom_base = st.number_input("משקל בסיס (1RM בק\"ג):", value=float(wl_dict.get(selected_exercise, 100)), step=5.0)
     
     if custom_base > 0:
-        # טבלת RIR ו-Percentage מקצועית לקרוספיט
         rir_data = [
             {"RIR (חזרות בבנק)": "0 RIR (כשל מוחלט)", "אחוז משוער מ-1RM": "100%", "משקל עבודה": round(custom_base * 1.0, 1)},
             {"RIR (חזרות בבנק)": "1 RIR (יכולת לחזרה 1 נוספת)", "אחוז משוער מ-1RM": "92%", "משקל עבודה": round(custom_base * 0.92, 1)},
@@ -255,7 +283,7 @@ with tab_gym:
 # --- טאב 3: בנצ'מארקים ומדדי אירובי ---
 with tab_metcon:
     st.markdown("### ⏱️ בנצ'מארקים ומדדי אירובי (Metcon & Endurance)")
-    st.markdown("מעקב אחר תוצאות במבחני כושר מרכזיים (זמנים בשניות או דקות):")
+    st.markdown("מעקב אחר תוצאות במבחני כושר מרכזיים:")
     cols_m = st.columns(2)
     metcon_items = list(metcon_dict.items())
     half_m = len(metcon_items) // 2
