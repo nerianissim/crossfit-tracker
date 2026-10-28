@@ -4,64 +4,124 @@ import json
 import base64
 import requests
 
-# הגדרת עמוד עם תמיכה בעיצוב נקי
+# הגדרת עמוד
 st.set_page_config(
-    page_title="CrossFit PR Dashboard", 
-    page_icon="🏆", 
+    page_title="CrossFit PR Tracker", 
+    page_icon="⚡", 
     layout="centered",
     initial_sidebar_state="collapsed"
 )
 
-# הזרקת עיצוב CSS מותאם אישית למראה רשמי ומקצועי (יישור לימין)
+# הזרקת עיצוב CSS מותאם אישית (Dark Mode מודרני, כרטיסיות מוקפדות ויישור לימין)
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap');
     
-    html, body, [class*="css"] {
+    /* רקע כללי שחור-אפור עמוק */
+    .stApp {
+        background-color: #0E1117;
+        color: #F8FAFC;
         font-family: 'Heebo', sans-serif;
         direction: rtl;
         text-align: right;
     }
     
-    .main-header {
-        font-size: 2.2rem;
-        font-weight: 700;
-        color: #1E293B;
+    /* כותרת ראשית ענקית באמצע */
+    .hero-container {
         text-align: center;
-        margin-bottom: 0.2rem;
-    }
-    
-    .sub-header {
-        font-size: 1rem;
-        color: #64748B;
-        text-align: center;
+        padding: 2rem 0 1rem 0;
+        border-bottom: 2px solid #1F2937;
         margin-bottom: 2rem;
     }
-    
+    .main-title {
+        font-size: 3rem;
+        font-weight: 900;
+        color: #FFFFFF;
+        letter-spacing: 2px;
+        margin: 0;
+        text-transform: uppercase;
+    }
+    .sub-title {
+        font-size: 1.1rem;
+        color: #9CA3AF;
+        margin-top: 0.5rem;
+        font-weight: 400;
+    }
+
+    /* עיצוב לשוניות (Tabs) */
+    .stTabs [data-baseweb="tab-list"] {
+        justify-content: center;
+        gap: 10px;
+        background-color: #161B22;
+        padding: 10px;
+        border-radius: 12px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        background-color: #21262D;
+        color: #9CA3AF;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 600;
+        border: none;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: #2563EB !important;
+        color: #FFFFFF !important;
+    }
+
+    /* כרטיסיות קטנות לתרגילים (מסגרות עדינות) */
+    div.stNumberInput {
+        background-color: #161B22;
+        padding: 12px;
+        border-radius: 10px;
+        border: 1px solid #30363D;
+        margin-bottom: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    }
+    div.stNumberInput label {
+        color: #E2E8F0 !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+    }
+
+    /* כפתור שמירה מקצועי ובולט */
     .stButton>button {
         width: 100%;
-        background-color: #2563EB;
+        background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
         color: white;
-        border-radius: 8px;
-        font-weight: 600;
-        padding: 0.6rem;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1.2rem;
+        padding: 0.8rem;
         border: none;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 8px 16px -4px rgba(37, 99, 235, 0.4);
         transition: all 0.3s ease;
+        text-transform: uppercase;
     }
-    
     .stButton>button:hover {
-        background-color: #1D4ED8;
-        box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15);
+        background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%);
+        box-shadow: 0 10px 20px -4px rgba(37, 99, 235, 0.6);
+        transform: translateY(-2px);
+    }
+
+    /* טבלאות סיכום מעוצבות */
+    .dataframe {
+        background-color: #161B22 !important;
+        color: #F8FAFC !important;
+        border-radius: 10px !important;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# כותרת ראשית מעוצבת
-st.markdown('<p class="main-header">🏆 CrossFit Personal Records</p>', unsafe_allow_html=True)
-st.markdown('<p class="sub-header">מערכת מעקב וניהול שיאים אישיים</p>', unsafe_allow_html=True)
+# כותרת ראשית מרכזית מקצועית
+st.markdown("""
+    <div class="hero-container">
+        <p class="main-title">⚡ CROSSFIT</p>
+        <p class="sub-title">מערכת מעקב שיאים אישיים מתקדמת</p>
+    </div>
+""", unsafe_allow_html=True)
 
-# טעינת הגדרות אבטחה
+# טעינת הגדרות אבטחה מ-Secrets
 try:
     TOKEN = st.secrets["GITHUB_TOKEN"]
     REPO = st.secrets["REPO_NAME"]
@@ -88,80 +148,4 @@ def load_data_from_github():
 
 def save_data_to_github(data_dict, sha):
     updated_content = json.dumps(data_dict, indent=4, ensure_ascii=False)
-    encoded_content = base64.b64encode(updated_content.encode("utf-8")).decode("utf-8")
-    
-    payload = {
-        "message": "Update CrossFit PRs via Dashboard",
-        "content": encoded_content,
-        "sha": sha
-    }
-    response = requests.put(API_URL, headers=headers, json=payload)
-    return response.status_code in [200, 201]
-
-data, file_sha = load_data_from_github()
-if not data:
-    st.error("❌ שגיאה בטעינת הנתונים מול GitHub. בדוק את הרשאות הטוקן ושם המאגר.")
-    st.stop()
-
-# יצירת לשוניות מעוצבות
-tab1, tab2 = st.tabs(["🏋️ Weightlifting & Powerlifting", "🤸 Gymnastics & Calisthenics"])
-
-with tab1:
-    st.markdown("### משקלי עבודה (ק\"ג)")
-    updated_wl = {}
-    cols = st.columns(2)
-    items = list(data["Weightlifting"].items())
-    half = len(items) // 2
-    
-    for i, (exercise, weight) in enumerate(items):
-        target_col = cols[0] if i < half else cols[1]
-        with target_col:
-            val = st.number_input(f"{exercise}", value=float(weight), step=2.5, format="%.1f", key=f"wl_{exercise}")
-            updated_wl[exercise] = val
-
-with tab2:
-    st.markdown("### תרגילי משקל גוף וגמישות (חזרות)")
-    updated_gym = {}
-    cols_g = st.columns(2)
-    gym_items = list(data["Gymnastics"].items())
-    half_g = len(gym_items) // 2
-    
-    for i, (exercise, reps) in enumerate(gym_items):
-        target_col = cols_g[0] if i < half_g else cols_g[1]
-        with target_col:
-            val = st.number_input(f"{exercise}", value=int(reps), step=1, key=f"gym_{exercise}")
-            updated_gym[exercise] = val
-
-st.markdown("<br>", unsafe_allow_html=True)
-
-# כפתור שמירה מרכזי בולט ונקי
-col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
-with col_btn2:
-    if st.button("💾 שמור שיאים חדשים", type="primary"):
-        new_data = {
-            "Weightlifting": updated_wl,
-            "Gymnastics": updated_gym
-        }
-        success = save_data_to_github(new_data, file_sha)
-        if success:
-            st.success("השיאים עודכנו ונשמרו בהצלחה! 🎉")
-            st.cache_data.clear()
-            st.rerun()
-        else:
-            st.error("שגיאה בשמירת הנתונים מול GitHub. ודא שהטוקן תקין.")
-
-st.divider()
-
-# חלק סיכום נקי
-st.markdown("### 📊 סיכום שיאים אישיים פעילים")
-summary_col1, summary_col2 = st.columns(2)
-
-with summary_col1:
-    st.markdown("**הרים - Weightlifting**")
-    df_wl = pd.DataFrame(list(data["Weightlifting"].items()), columns=["תרגיל", "משקל (ק\"ג)"])
-    st.dataframe(df_wl[df_wl["משקל (ק\"ג)"] > 0], hide_index=True, use_container_width=True)
-
-with summary_col2:
-    st.markdown("**גמישות - Gymnastics**")
-    df_gym = pd.DataFrame(list(data["Gymnastics"].items()), columns=["תרגיל", "חזרות"])
-    st.dataframe(df_gym[df_gym["חזרות"] > 0], hide_index=True, use_container_width=True)
+    encoded_content = base64.b64encode(
